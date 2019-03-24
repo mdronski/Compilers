@@ -1,6 +1,6 @@
 import sys
-import Scanner
-import Parser
+import ply.yacc as yacc
+from Mparser import Mparser
 
 if __name__ == '__main__':
 
@@ -11,6 +11,7 @@ if __name__ == '__main__':
         print("Cannot open {0} file".format(filename))
         sys.exit(0)
 
-    parser = Parser.parser
     text = file.read()
-    parser.parse(text, lexer=Scanner.lexer)
+    parser = Mparser()
+    ast = parser.parse(text)
+    print(ast)

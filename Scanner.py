@@ -46,7 +46,7 @@ class Scanner(object):
              ] + list(reserved.values())
 
     literals = ['+', '-', '*', '/',
-                '=', '<', '>',
+                '=', '<', '>', '\'',
                 '(', ')', '[', ']', '{', '}',
                 '\'', ',', ':', ';']
 
@@ -92,10 +92,9 @@ class Scanner(object):
         r'\n+'
         t.lexer.lineno += len(t.value)
 
-    def find_column(input, token):
+    def find_column(self, input, token):
         line_start = input.rfind('\n', 0, token.lexpos) + 1
         return (token.lexpos - line_start) + 1
-
 
     def t_error(self, t):
         print("line %d: illegal character '%s'" % (t.lineno, t.value[0]))

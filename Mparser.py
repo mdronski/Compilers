@@ -53,11 +53,13 @@ class Mparser:
                       | ID ADDASSIGN expression ';'
                       | ID SUBASSIGN expression ';'
                       | ID MULASSIGN expression ';'
-                      | ID DIVASSIGN expression ';'"""
+                      | ID DIVASSIGN expression ';'
+                      | ID '[' INTNUM ',' INTNUM ']' '=' expression ';'"""
     pass
 
     def p_expression(self, p):
         """expression : ID
+                      | ID '[' INTNUM ',' INTNUM ']'
                       | constant
                       | matrix_decl
                       | bin_op
@@ -75,8 +77,18 @@ class Mparser:
     def p_matrix_decl(self, p):
         """matrix_decl : EYE '(' INTNUM ')'
                        | ZEROS '(' INTNUM ')'
-                       | ONES '(' INTNUM ')'"""
+                       | ONES '(' INTNUM ')'
+                       | '[' matrix_rows ']'"""
         pass
+
+    def p_matrix_rows(self, p):
+        """matrix_rows : matrix_rows matrix_row
+                       | matrix_row"""
+
+    def p_matrix_row(self, p):
+        """matrix_row : matrix_row ',' INTNUM
+                      | matrix_row ';'
+                      | INTNUM"""
 
     def p_bin_op(self, p):
         """bin_op : expression '+' expression
