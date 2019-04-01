@@ -19,8 +19,8 @@ class Mparser:
         ("nonassoc", 'ELSE'),
         ("right", '='),
         ("nonassoc", '<', '>', 'EQ', 'NEQ', 'LE', 'GE'),
-        ("left", '+', '-'),
-        ("left", '*', '/'),
+        ("left", '+', '-', 'DOTADD', 'DOTSUB'),
+        ("left", '*', '/', 'DOTMUL', 'DOTDIV'),
         ("left", 'UMINUS')
     )
 
@@ -55,7 +55,7 @@ class Mparser:
                       | ID MULASSIGN expression ';'
                       | ID DIVASSIGN expression ';'
                       | ID '[' INTNUM ',' INTNUM ']' '=' expression ';'"""
-    pass
+        pass
 
     def p_expression(self, p):
         """expression : ID
