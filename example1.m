@@ -8,7 +8,7 @@ I = eye(10);   # create 10x10 matrix filled with ones on diagonal and zeros else
 E1 = [ 1, 2, 3;
        7, 8, 9 ] ;
 
-A[1,3] = 0 ;
+A[1,3] = A[1,3] ;
 
 x = 2;
 y = 2.5;

@@ -65,13 +65,9 @@ class Mparser:
         p[0] = p[1]
 
     def p_assignment(self, p):
-        """assignment : ID  assignment_op expression ';'
-                      | ID '[' INTNUM ',' INTNUM ']' assignment_op expression ';'"""
+        """assignment : variable assignment_op expression ';'"""
 
-        if len(p) == 5:
-            p[0] = AST.Assignment(AST.Variable(p[1]), p[2], p[3])
-        else:
-            p[0] = AST.Assignment(AST.MatrixAccess(p[1], p[3], p[5]), p[7], p[8])
+        p[0] = AST.Assignment(p[1], p[2], p[3])
 
     def p_assignment_op(self, p):
         """assignment_op : '='
@@ -82,8 +78,7 @@ class Mparser:
         p[0] = p[1]
 
     def p_expression(self, p):
-        """expression : ID
-                      | ID '[' INTNUM ',' INTNUM ']'
+        """expression : variable
                       | constant
                       | matrix_decl
                       | un_op
@@ -111,6 +106,15 @@ class Mparser:
             p[0] = AST.FloatNum(p[1])
         if isinstance(p[1], str):
             p[0] = AST.String(p[1])
+
+    def p_variable(self, p):
+        """variable : ID
+                    | matrix_access"""
+        p[0] = AST.Variable(p[1])
+
+    def p_matrix_access(self, p):
+        """matrix_access : ID '[' INTNUM ',' INTNUM ']'"""
+        p[0] = AST.MatrixAccess(p[1], p[3], p[5])
 
     def p_matrix_decl(self, p):
         """matrix_decl : EYE '(' INTNUM ')'

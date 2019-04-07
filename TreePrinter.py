@@ -22,11 +22,18 @@ class TreePrinter:
 
     @addToClass(AST.Variable)
     def printTree(self, depth):
-        return depth + str(self.id) + "\n"
+        if hasattr(self.id, "printTree"):
+            return self.id.printTree(depth)
+        else:
+            return depth + str(self.id) + "\n"
 
     @addToClass(AST.MatrixAccess)
     def printTree(self, depth):
-        return depth + str(self.id) + "[" + str(self.row) + "," + str(self.column) + "]\n"
+        result = depth + "REF\n"
+        result += depth + "| " + str(self.id) + "\n"
+        result += depth + "| " + str(self.row) + "\n"
+        result += depth + "| " + str(self.column) + "\n"
+        return result
 
     @addToClass(AST.Statements)
     def printTree(self, depth):
@@ -51,7 +58,12 @@ class TreePrinter:
 
     @addToClass(AST.UnaryOp)
     def printTree(self, depth):
-        result = depth + "| " + str(self.op) + "\n"
+        name = ""
+        if self.op == "'":
+            name = "TRANSPOSE"
+        else:
+            name = "NEGATION"
+        result = depth + name + "\n"
         result += self.expression.printTree(depth + "| ")
         return result
 
@@ -65,10 +77,9 @@ class TreePrinter:
     @addToClass(AST.CondStatement)
     def printTree(self, depth):
         result = depth + "IF\n"
-        result += depth + "| COND\n"
-        result += self.condition.printTree(depth + "| | ")
-        result += depth + "| THEN\n"
-        result += self.statements.printTree(depth + "| | ")
+        result += self.condition.printTree(depth + "| ")
+        result += depth + "THEN\n"
+        result += self.statements.printTree(depth + "| ")
         if self.has_else:
             result += depth + "ELSE\n"
             result += self.else_statements.printTree(depth + "| ")
@@ -87,12 +98,10 @@ class TreePrinter:
     def printTree(self, depth):
         result = depth + "FOR\n"
         result += depth + "| " + self.id + "\n"
-        result += depth + "| START\n"
+        result += depth + "| RANGE\n"
         result += self.start.printTree(depth + "| | ")
-        result += depth + "| END\n"
         result += self.end.printTree(depth + "| | ")
-        result += depth + "| DO\n"
-        result += self.statements.printTree(depth + "| | ")
+        result += self.statements.printTree(depth + "| ")
         return result
 
     @addToClass(AST.ReturnInstr)
@@ -118,8 +127,9 @@ class TreePrinter:
 
     @addToClass(AST.MatrixRow)
     def printTree(self, depth):
-        result = depth + "ROW\n"
-        result += depth + "| " + str(self.values) + "\n"
+        result = depth + "VECTOR\n"
+        for val in self.values:
+            result += depth + "| " + str(val) + "\n"
         return result
 
     @addToClass(AST.OnesMatrix)
