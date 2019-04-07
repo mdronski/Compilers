@@ -31,13 +31,6 @@ class Variable(Node):
 
 
 class Matrix(Node):
-    def __init__(self, value=None):
-        if value is None:
-            value = []
-        self.rows = value
-
-
-class MatrixRows(Node):
     def __init__(self):
         self.rows = []
 
@@ -82,7 +75,7 @@ class CondStatement(Node):
     def __init__(self, condition, statements, has_else=False, else_statements=None):
         self.condition = condition
         self.statements = statements
-        self.hasElse = has_else
+        self.has_else = has_else
         self.else_statements = else_statements
 
 
@@ -116,10 +109,6 @@ class BreakInstr(Node):
 class PrintInstr(Node):
     def __init__(self):
         self.instructions = []
-
-# class InstructionToPrint(Node):
-#     def __init__(self):
-#         self.instructions = []
 
 
 class Error(Node):

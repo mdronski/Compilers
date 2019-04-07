@@ -23,7 +23,8 @@ class Mparser:
         ("nonassoc", '<', '>', 'EQ', 'NEQ', 'LE', 'GE'),
         ("left", '+', '-', 'DOTADD', 'DOTSUB'),
         ("left", '*', '/', 'DOTMUL', 'DOTDIV'),
-        ("left", 'UMINUS')
+        ("left", 'UMINUS'),
+        ("right", '\'')
     )
 
     def p_error(self, p):
@@ -55,10 +56,8 @@ class Mparser:
         elif len(p) == 4:
             p[0] = p[2]
         elif len(p) == 5:
-            p[1].statements.extend(p[3])
+            p[1].statements.extend(p[3].statements)
             p[0] = p[1]
-
-        print(p[0])
 
     def p_statement(self, p):
         """statement : assignment
@@ -76,13 +75,13 @@ class Mparser:
         if p[2] == '=':
             p[0] = AST.Assignment(p[1], p[3])
         elif p[2] == '+=':
-            p[0] = AST.Assignment(p[1], p[1] + p[3])
+            p[0] = AST.BinOp(AST.Variable(p[1]), p[2], p[3])
         elif p[2] == '-=':
-            p[0] = AST.Assignment(p[1], p[1] - p[3])
+            p[0] = AST.BinOp(AST.Variable(p[1]), p[2], p[3])
         elif p[2] == '*=':
-            p[0] = AST.Assignment(p[1], p[1] * p[3])
+            p[0] = AST.BinOp(AST.Variable(p[1]), p[2], p[3])
         elif p[2] == '/=':
-            p[0] = AST.Assignment(p[1], p[1] / p[3])
+            p[0] = AST.BinOp(AST.Variable(p[1]), p[2], p[3])
         elif len(p) == 9:
             p[0] = AST.MatrixAssignment(p[1], p[3], p[5], p[8])
 
@@ -91,11 +90,19 @@ class Mparser:
                       | ID '[' INTNUM ',' INTNUM ']'
                       | constant
                       | matrix_decl
-                      | bin_op
                       | un_op
+                      | bin_op
                       | logic_op
                       | '(' expression ')'"""
-        p[0] = p[1]
+
+        if isinstance(p[1], AST.Constant):
+            p[0] = p[1]
+        elif p[1] == '(':
+            p[0] = p[2]
+        elif isinstance(p[1], str):
+            p[0] = AST.Variable(p[1])
+        else:
+            p[0] = p[1]
 
     def p_constant(self, p):
         """constant : INTNUM
@@ -116,21 +123,40 @@ class Mparser:
                        | '[' matrix_rows ']'"""
 
         if p[1] == 'eye':
-            p[0] = AST.Matrix(np.eye(p[3]))
+            p[0] = AST.Matrix()
+            rows = []
+            for i in range(p[3]):
+                row = AST.MatrixRow()
+                row.values = [0 for x in range(p[3])]
+                row.values[i] = 1
+                rows.append(row)
+            p[0].rows = rows
         elif p[1] == 'zeros':
-            p[0] = AST.Matrix(np.zeros(p[3]))
+            p[0] = AST.Matrix()
+            rows = []
+            for i in range(p[3]):
+                row = AST.MatrixRow()
+                row.values = [0 for x in range(p[3])]
+                rows.append(row)
+            p[0].rows = rows
         elif p[1] == 'ones':
-            p[0] = AST.Matrix(np.ones(p[3]))
+            p[0] = AST.Matrix()
+            rows = []
+            for i in range(p[3]):
+                row = AST.MatrixRow()
+                row.values = [1 for x in range(p[3])]
+                rows.append(row)
+            p[0].rows = rows
         else:
-            p[0] = AST.Matrix(np.asarray(p[2]))
+            p[0] = AST.Matrix()
+            p[0].rows = p[2]
 
     def p_matrix_rows(self, p):
         """matrix_rows : matrix_rows matrix_row
                        | matrix_row"""
-        if p[0] is None:
+        if len(p) == 2:
             p[0] = AST.MatrixRows()
-        elif len(p) == 2:
-            p[0] = p[1]
+            p[0].rows.append(p[1])
         else:
             p[1].rows.append(p[2])
             p[0] = p[1]
@@ -139,9 +165,10 @@ class Mparser:
         """matrix_row : matrix_row ',' INTNUM
                       | matrix_row ';'
                       | INTNUM"""
-        if p[0] is None:
+        if len(p) == 2:
             p[0] = AST.MatrixRow()
-        elif len(p) == 2:
+            p[0].values.append(p[1])
+        elif len(p) == 3:
             p[0] = p[1]
         else:
             p[1].values.append(p[3])
@@ -190,10 +217,10 @@ class Mparser:
     def p_conditional_statement(self, p):
         """conditional_statement : IF '(' logic_op ')' conditional_instructions %prec IF
                                  | IF '(' logic_op ')' conditional_instructions ELSE conditional_instructions """
-        if len(p) == 7:
-            p[0] = AST.CondStatement(p[3], p[4])
+        if len(p) == 6:
+            p[0] = AST.CondStatement(p[3], p[5])
         else:
-            p[0] = AST.CondStatement(p[3], p[4], True, p[6])
+            p[0] = AST.CondStatement(p[3], p[5], True, p[7])
 
     def p_conditional_instructions(self, p):
         """conditional_instructions : statement
@@ -205,15 +232,15 @@ class Mparser:
 
     def p_while_loop(self, p):
         """while_loop : WHILE '(' logic_op ')' conditional_instructions"""
-        p[0] = AST.WhileLoop(p[4], p[6])
+        p[0] = AST.WhileLoop(p[3], p[5])
 
     def p_for_loop(self, p):
         """for_loop : FOR ID '=' expression ':' expression conditional_instructions"""
-        p[0] = AST.ForLoop(p[3], p[5], p[7], p[8])
+        p[0] = AST.ForLoop(p[2], p[4], p[6], p[7])
 
     def p_return_instr(self, p):
         """return_instr : RETURN expression ';' """
-        p[0] = AST.ReturnInstr(p[3])
+        p[0] = AST.ReturnInstr(p[2])
 
     def p_continue_instr(self, p):
         """continue_instr : CONTINUE ';' """
@@ -225,15 +252,14 @@ class Mparser:
 
     def p_print_instr(self, p):
         """print_instr : PRINT instructions_to_print ';' """
-        p[0] = AST.PrintInstr()
+        p[0] = p[2]
 
     def p_instructions_to_print(self, p):
         """instructions_to_print : instructions_to_print ',' expression
                                  | expression"""
-        if p[0] is None:
+        if len(p) == 2:
             p[0] = AST.PrintInstr()
-        elif len(p) == 2:
-            p[0] = p[1]
+            p[0].instructions.append(p[1])
         else:
             p[1].instructions.append(p[3])
             p[0] = p[1]
