@@ -30,9 +30,53 @@ class Variable(Node):
         self.id = id
 
 
+class MatrixAccess(Node):
+    def __init__(self, id, row, column):
+        self.id = id
+        self.row = row
+        self.column = column
+
+
 class Matrix(Node):
     def __init__(self):
         self.rows = []
+
+
+class OnesMatrix(Matrix):
+    def __init__(self, n):
+        super().__init__()
+        self.n = n
+        rows = []
+        for i in range(n):
+            row = MatrixRow()
+            row.values = [1 for x in range(n)]
+            rows.append(row)
+        self.rows = rows
+
+
+class EyeMatrix(Matrix):
+    def __init__(self, n):
+        super().__init__()
+        self.n = n
+        rows = []
+        for i in range(n):
+            row = MatrixRow()
+            row.values = [1 for x in range(n)]
+            row.values[i] = 1
+            rows.append(row)
+        self.rows = rows
+
+
+class ZerosMatrix(Matrix):
+    def __init__(self, n):
+        super().__init__()
+        self.n = n
+        rows = []
+        for i in range(n):
+            row = MatrixRow()
+            row.values = [0 for x in range(n)]
+            rows.append(row)
+        self.rows = rows
 
 
 class MatrixRow(Node):
@@ -41,17 +85,10 @@ class MatrixRow(Node):
 
 
 class Assignment(Node):
-    def __init__(self, id, value):
-        self.id = id
-        self.value = value
-
-
-class MatrixAssignment(Node):
-    def __init__(self, id, row, column, value):
-        self.id = id
-        self.row = row
-        self.column = column
-        self.value = value
+    def __init__(self, left, op, right):
+        self.left = left
+        self.op = op
+        self.right = right
 
 
 class BinOp(Node):

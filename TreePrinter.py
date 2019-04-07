@@ -24,6 +24,10 @@ class TreePrinter:
     def printTree(self, depth):
         return depth + str(self.id) + "\n"
 
+    @addToClass(AST.MatrixAccess)
+    def printTree(self, depth):
+        return depth + str(self.id) + "[" + str(self.row) + "," + str(self.column) + "]\n"
+
     @addToClass(AST.Statements)
     def printTree(self, depth):
         result = ""
@@ -33,9 +37,9 @@ class TreePrinter:
 
     @addToClass(AST.Assignment)
     def printTree(self, depth):
-        result = depth + "=\n"
-        result += depth + "| " + str(self.id) + "\n"
-        result += self.value.printTree(depth + "| ")
+        result = depth + str(self.op) + "\n"
+        result += self.left.printTree(depth + "| ")
+        result += self.right.printTree(depth + "| ")
         return result
 
     @addToClass(AST.BinOp)
@@ -108,12 +112,6 @@ class TreePrinter:
     @addToClass(AST.Matrix)
     def printTree(self, depth):
         result = depth + "MATRIX\n"
-        result += self.rows.printTree(depth + "| ")
-        return result
-
-    @addToClass(AST.MatrixRows)
-    def printTree(self, depth):
-        result = depth + "ROWS\n"
         for row in self.rows:
             result += row.printTree(depth + "| ")
         return result
@@ -122,4 +120,22 @@ class TreePrinter:
     def printTree(self, depth):
         result = depth + "ROW\n"
         result += depth + "| " + str(self.values) + "\n"
+        return result
+
+    @addToClass(AST.OnesMatrix)
+    def printTree(self, depth):
+        result = depth + "ONES\n"
+        result += depth + "| " + str(self.n) + "\n"
+        return result
+
+    @addToClass(AST.EyeMatrix)
+    def printTree(self, depth):
+        result = depth + "EYE\n"
+        result += depth + "| " + str(self.n) + "\n"
+        return result
+
+    @addToClass(AST.ZerosMatrix)
+    def printTree(self, depth):
+        result = depth + "ZEROS \n"
+        result += depth + "| " + str(self.n) + "\n"
         return result

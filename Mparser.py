@@ -19,7 +19,7 @@ class Mparser:
     precedence = (
         ("nonassoc", 'IF'),
         ("nonassoc", 'ELSE'),
-        ("right", '='),
+        ("right", '=', "ADDASSIGN", "SUBASSIGN", "MULASSIGN", "DIVASSIGN"),
         ("nonassoc", '<', '>', 'EQ', 'NEQ', 'LE', 'GE'),
         ("left", '+', '-', 'DOTADD', 'DOTSUB'),
         ("left", '*', '/', 'DOTMUL', 'DOTDIV'),
@@ -65,25 +65,21 @@ class Mparser:
         p[0] = p[1]
 
     def p_assignment(self, p):
-        """assignment : ID '=' expression ';'
-                      | ID ADDASSIGN expression ';'
-                      | ID SUBASSIGN expression ';'
-                      | ID MULASSIGN expression ';'
-                      | ID DIVASSIGN expression ';'
-                      | ID '[' INTNUM ',' INTNUM ']' '=' expression ';'"""
+        """assignment : ID  assignment_op expression ';'
+                      | ID '[' INTNUM ',' INTNUM ']' assignment_op expression ';'"""
 
-        if p[2] == '=':
-            p[0] = AST.Assignment(p[1], p[3])
-        elif p[2] == '+=':
-            p[0] = AST.BinOp(AST.Variable(p[1]), p[2], p[3])
-        elif p[2] == '-=':
-            p[0] = AST.BinOp(AST.Variable(p[1]), p[2], p[3])
-        elif p[2] == '*=':
-            p[0] = AST.BinOp(AST.Variable(p[1]), p[2], p[3])
-        elif p[2] == '/=':
-            p[0] = AST.BinOp(AST.Variable(p[1]), p[2], p[3])
-        elif len(p) == 9:
-            p[0] = AST.MatrixAssignment(p[1], p[3], p[5], p[8])
+        if len(p) == 5:
+            p[0] = AST.Assignment(AST.Variable(p[1]), p[2], p[3])
+        else:
+            p[0] = AST.Assignment(AST.MatrixAccess(p[1], p[3], p[5]), p[7], p[8])
+
+    def p_assignment_op(self, p):
+        """assignment_op : '='
+                         | ADDASSIGN
+                         | SUBASSIGN
+                         | MULASSIGN
+                         | DIVASSIGN"""
+        p[0] = p[1]
 
     def p_expression(self, p):
         """expression : ID
@@ -123,30 +119,11 @@ class Mparser:
                        | '[' matrix_rows ']'"""
 
         if p[1] == 'eye':
-            p[0] = AST.Matrix()
-            rows = []
-            for i in range(p[3]):
-                row = AST.MatrixRow()
-                row.values = [0 for x in range(p[3])]
-                row.values[i] = 1
-                rows.append(row)
-            p[0].rows = rows
+            p[0] = AST.EyeMatrix(p[3])
         elif p[1] == 'zeros':
-            p[0] = AST.Matrix()
-            rows = []
-            for i in range(p[3]):
-                row = AST.MatrixRow()
-                row.values = [0 for x in range(p[3])]
-                rows.append(row)
-            p[0].rows = rows
+            p[0] = AST.ZerosMatrix(p[3])
         elif p[1] == 'ones':
-            p[0] = AST.Matrix()
-            rows = []
-            for i in range(p[3]):
-                row = AST.MatrixRow()
-                row.values = [1 for x in range(p[3])]
-                rows.append(row)
-            p[0].rows = rows
+            p[0] = AST.OnesMatrix(p[3])
         else:
             p[0] = AST.Matrix()
             p[0].rows = p[2]
@@ -155,10 +132,10 @@ class Mparser:
         """matrix_rows : matrix_rows matrix_row
                        | matrix_row"""
         if len(p) == 2:
-            p[0] = AST.MatrixRows()
-            p[0].rows.append(p[1])
+            p[0] = []
+            p[0].append(p[1])
         else:
-            p[1].rows.append(p[2])
+            p[1].append(p[2])
             p[0] = p[1]
 
     def p_matrix_row(self, p):
