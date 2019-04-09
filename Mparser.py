@@ -80,7 +80,7 @@ class Mparser:
     def p_expression(self, p):
         """expression : variable
                       | constant
-                      | matrix_decl
+                      | matrix
                       | un_op
                       | bin_op
                       | logic_op
@@ -112,15 +112,21 @@ class Mparser:
                     | matrix_access"""
         p[0] = AST.Variable(p[1])
 
+    def p_value(self, p):
+        """value : variable
+                 | matrix
+                 | constant"""
+        p[0] = AST.Value(p[1])
+
     def p_matrix_access(self, p):
         """matrix_access : ID '[' INTNUM ',' INTNUM ']'"""
         p[0] = AST.MatrixAccess(p[1], p[3], p[5])
 
-    def p_matrix_decl(self, p):
-        """matrix_decl : EYE '(' INTNUM ')'
+    def p_matrix(self, p):
+        """matrix : EYE '(' INTNUM ')'
                        | ZEROS '(' INTNUM ')'
                        | ONES '(' INTNUM ')'
-                       | '[' matrix_rows ']'"""
+                       | '[' matrix_row ']' """
 
         if p[1] == 'eye':
             p[0] = AST.EyeMatrix(p[3])
@@ -132,25 +138,28 @@ class Mparser:
             p[0] = AST.Matrix()
             p[0].rows = p[2]
 
-    def p_matrix_rows(self, p):
-        """matrix_rows : matrix_rows matrix_row
-                       | matrix_row"""
-        if len(p) == 2:
-            p[0] = []
-            p[0].append(p[1])
-        else:
-            p[1].append(p[2])
-            p[0] = p[1]
+    # def p_vectors(self, p):
+    #     """vectors : vectors ',' vector """
+    #
+    # def p_vector(self, p):
+    #     """vector : '[' matrix_row ']'"""
+    #
+    # def p_matrix_rows(self, p):
+    #     """matrix_rows : matrix_rows matrix_row
+    #                    | matrix_row"""
+    #     if len(p) == 2:
+    #         p[0] = []
+    #         p[0].append(p[1])
+    #     else:
+    #         p[1].append(p[2])
+    #         p[0] = p[1]
 
     def p_matrix_row(self, p):
-        """matrix_row : matrix_row ',' INTNUM
-                      | matrix_row ';'
-                      | INTNUM"""
+        """matrix_row : matrix_row ',' value
+                      | value"""
         if len(p) == 2:
             p[0] = AST.MatrixRow()
             p[0].values.append(p[1])
-        elif len(p) == 3:
-            p[0] = p[1]
         else:
             p[1].values.append(p[3])
             p[0] = p[1]

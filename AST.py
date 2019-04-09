@@ -30,6 +30,11 @@ class Variable(Node):
         self.id = id
 
 
+class Value(Node):
+    def __init__(self, id):
+        self.id = id
+
+
 class MatrixAccess(Node):
     def __init__(self, id, row, column):
         self.id = id

@@ -16,6 +16,13 @@ class TreePrinter:
     def printTree(self, indent=0):
         raise Exception("printTree not defined in class " + self.__class__.__name__)
 
+    @addToClass(AST.Value)
+    def printTree(self, depth):
+        if hasattr(self.id, "printTree"):
+            return self.id.printTree(depth)
+        else:
+            return depth + str(self.id) + "\n"
+
     @addToClass(AST.Constant)
     def printTree(self, depth):
         return depth + str(self.value) + "\n"
@@ -120,16 +127,14 @@ class TreePrinter:
 
     @addToClass(AST.Matrix)
     def printTree(self, depth):
-        result = depth + "MATRIX\n"
-        for row in self.rows:
-            result += row.printTree(depth + "| ")
+        result = self.rows.printTree(depth)
         return result
 
     @addToClass(AST.MatrixRow)
     def printTree(self, depth):
         result = depth + "VECTOR\n"
         for val in self.values:
-            result += depth + "| " + str(val) + "\n"
+            result += val.printTree(depth + "| ")
         return result
 
     @addToClass(AST.OnesMatrix)
