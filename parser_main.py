@@ -15,4 +15,4 @@ if __name__ == '__main__':
     text = file.read()
     parser = Mparser()
     ast = parser.parse(text)
-    print(ast.to_str())
+    print(ast)

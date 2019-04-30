@@ -1,7 +1,10 @@
 class Node(object):
-    def to_str(self):
+    def __str__(self):
         return self.printTree("")
 
+    def accept(self, visitor):
+        return visitor.visit(self)
+    
 
 class Statements(Node):
     def __init__(self):

@@ -45,8 +45,6 @@ class Mparser:
                       | statement
                       | statements '{' statements '}'"""
 
-        # if p[0] is None:
-        #     p[0] = AST.Statements()
         if len(p) == 2:
             p[0] = AST.Statements()
             p[0].statements.append(p[1])
@@ -137,22 +135,6 @@ class Mparser:
         else:
             p[0] = AST.Matrix()
             p[0].rows = p[2]
-
-    # def p_vectors(self, p):
-    #     """vectors : vectors ',' vector """
-    #
-    # def p_vector(self, p):
-    #     """vector : '[' matrix_row ']'"""
-    #
-    # def p_matrix_rows(self, p):
-    #     """matrix_rows : matrix_rows matrix_row
-    #                    | matrix_row"""
-    #     if len(p) == 2:
-    #         p[0] = []
-    #         p[0].append(p[1])
-    #     else:
-    #         p[1].append(p[2])
-    #         p[0] = p[1]
 
     def p_matrix_row(self, p):
         """matrix_row : matrix_row ',' value
