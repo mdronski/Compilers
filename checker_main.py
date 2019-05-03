@@ -16,7 +16,7 @@ if __name__ == '__main__':
     text = file.read()
     parser = Mparser()
     ast = parser.parse(text)
-    print(ast)
+    # print(ast)
     # Below code shows how to use visitor
     typeChecker = TypeChecker()
     typeChecker.visit(ast)  # or alternatively ast.accept(typeChecker)

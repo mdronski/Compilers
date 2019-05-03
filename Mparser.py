@@ -12,7 +12,7 @@ class Mparser:
 
     def parse(self, text):
         self.parser = yacc.yacc(module=self)
-        return self.parser.parse(text, lexer=self.scanner.lexer)
+        return self.parser.parse(text, lexer=self.scanner.lexer, tracking=True)
 
     tokens = Scanner.tokens
 
@@ -117,13 +117,13 @@ class Mparser:
         p[0] = AST.Value(p[1])
 
     def p_matrix_access(self, p):
-        """matrix_access : ID '[' INTNUM ',' INTNUM ']'"""
-        p[0] = AST.MatrixAccess(p[1], p[3], p[5], p.lineno(1))
+        """matrix_access : ID '[' int_sequence ']'"""
+        p[0] = AST.MatrixAccess(p[1], p[3], p.lineno(1))
 
     def p_matrix(self, p):
-        """matrix : EYE '(' INTNUM ')'
-                       | ZEROS '(' INTNUM ')'
-                       | ONES '(' INTNUM ')'
+        """matrix : EYE '(' int_sequence ')'
+                       | ZEROS '(' int_sequence ')'
+                       | ONES '(' int_sequence ')'
                        | '[' matrix_row ']' """
 
         if p[1] == 'eye':

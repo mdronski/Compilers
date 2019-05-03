@@ -38,10 +38,9 @@ class Variable(Node):
 
 
 class MatrixAccess(Node):
-    def __init__(self, id, row, column, line):
+    def __init__(self, id, dims, line):
         self.id = id
-        self.row = row
-        self.column = column
+        self.dims = dims
         self.line = line
 
 
@@ -51,6 +50,9 @@ class Matrix(Node):
 
     def validate(self):
         return self.rows.validate()
+
+    def shape(self):
+        return self.rows.shape()
 
 
 class Value(Node):
@@ -90,47 +92,62 @@ class MatrixRow(Node):
                 return False
         return True
 
+    def shape(self):
+        if not isinstance(self.values[0].id, Matrix):
+            return [len(self.values)]
+        return [len(self.values)] + self.values[0].id.shape()
+
 
 class OnesMatrix(Matrix):
-    def __init__(self, n, line):
+    def __init__(self, dims, line):
         super().__init__()
-        self.n = n
+        self.dims = dims
         self.line = line
-        rows = []
-        for i in range(n):
-            row = MatrixRow(line)
-            row.values = [1 for x in range(n)]
-            rows.append(row)
-        self.rows = rows
+        # self.n = n
+        # rows = []
+        # for i in range(n):
+        #     row = MatrixRow(line)
+        #     row.values = [1 for x in range(n)]
+        #     rows.append(row)
+        # self.rows = rows
+
+    def shape(self):
+        return self.dims
 
 
 class EyeMatrix(Matrix):
-    def __init__(self, n, line):
+    def __init__(self, dims, line):
         super().__init__()
-        self.n = n
+        self.dims = dims
         self.line = line
-        rows = []
-        for i in range(n):
-            row = MatrixRow(line)
-            row.values = [1 for x in range(n)]
-            row.values[i] = 1
-            rows.append(row)
-        self.rows = rows
+        # self.n = n
+        # rows = []
+        # for i in range(n):
+        #     row = MatrixRow(line)
+        #     row.values = [1 for x in range(n)]
+        #     row.values[i] = 1
+        #     rows.append(row)
+        # self.rows = rows
+
+    def shape(self):
+        return self.dims
 
 
 class ZerosMatrix(Matrix):
-    def __init__(self, n, line):
+    def __init__(self, dims, line):
         super().__init__()
-        self.n = n
+        self.dims = dims
         self.line = line
-        rows = []
-        for i in range(n):
-            row = MatrixRow(line)
-            row.values = [0 for x in range(n)]
-            rows.append(row)
-        self.rows = rows
+        # self.n = n
+        # rows = []
+        # for i in range(n):
+        #     row = MatrixRow(line)
+        #     row.values = [0 for x in range(n)]
+        #     rows.append(row)
+        # self.rows = rows
 
-
+    def shape(self):
+        return self.dims
 
 
 class Assignment(Node):

@@ -68,6 +68,16 @@ class TypeChecker(NodeVisitor):
         return 'matrix'
 
     def visit_Variable(self, node):
+        if isinstance(node.id, AST.MatrixAccess):
+            decl = self.table.get_from_lowest_scope(node.id.id).name
+            if len(decl.dims) != len(node.id.dims):
+                print("Error: Wrong dimensions line {}".format(node.line))
+                return None
+            for a, b in zip(decl.dims, node.id.dims):
+                if a <= b:
+                    print("Error: Wrong dimensions line {}".format(node.line))
+                    return None
+
         declaration = self.table.get_from_lowest_scope(node.id)
         if declaration is None:
             print("Error: Usage of undeclared variable '{}': line {}".format(node.id, node.line))
@@ -77,6 +87,13 @@ class TypeChecker(NodeVisitor):
     def visit_BinOp(self, node):
         type1 = self.visit(node.left)
         type2 = self.visit(node.right)
+
+        if type1 == type2 == 'matrix':
+            dims1 = self.table.get_from_lowest_scope(node.left.id).name.shape()
+            dims2 = self.table.get_from_lowest_scope(node.right.id).name.shape()
+            if dims1 != dims2:
+                print("Error: operations on tensors with different dimensions : line {}".format(node.line))
+
         op = node.op
         if bin_ttype[op][type1][type2] is None:
             print("Error: Type conflict, '{} {} {}': at line {}".format(type1, op, type2, node.line))
@@ -128,13 +145,13 @@ class TypeChecker(NodeVisitor):
             print("Error: Break outside the loop, at line {}".format(node.line))
 
     def visit_OnesMatrix(self, node):
-        pass
+        return 'matrix'
 
     def visit_EyeMatrix(self, node):
-        pass
+        return 'matrix'
 
     def visit_ZerosMatrix(self, node):
-        pass
+        return 'matrix'
 
     def visit_MatrixRow(self, node):
         if not node.validate():
@@ -144,11 +161,11 @@ class TypeChecker(NodeVisitor):
         expr_type = self.visit(node.right)
         if node.op in ['+=', '-=', '*=', '/=']:
             if node.left.id in self.table.symbols:
-                self.table.put(node.left.id, VariableSymbol(node.left, expr_type))
+                self.table.put(node.left.id, VariableSymbol(node.right, expr_type))
             else:
                 print("Error: Variable {} not declared, at line {}".format(node.left.id, node.line))
         else:
-            self.table.put(node.left.id, VariableSymbol(node.left, expr_type))
+            self.table.put(node.left.id, VariableSymbol(node.right, expr_type))
 
 
 

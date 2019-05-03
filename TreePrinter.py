@@ -38,14 +38,13 @@ class TreePrinter:
     def printTree(self, indent):
         result = indent + "REF\n"
         result += indent + "| " + str(self.id) + "\n"
-        result += indent + "| " + str(self.row) + "\n"
-        result += indent + "| " + str(self.column) + "\n"
+        result += indent + "| " + str(self.dims) + "\n"
         return result
 
     @addToClass(AST.Statements)
     def printTree(self, indent):
         result = ""
-        for block in self.statements:
+        for block in self.children:
             result += block.printTree(indent)
         return result
 
@@ -77,7 +76,7 @@ class TreePrinter:
     @addToClass(AST.PrintInstr)
     def printTree(self, indent):
         result = indent + "PRINT\n"
-        for instruction in self.instructions:
+        for instruction in self.children:
             result += instruction.printTree(indent + "| ")
         return result
 
@@ -140,17 +139,17 @@ class TreePrinter:
     @addToClass(AST.OnesMatrix)
     def printTree(self, indent):
         result = indent + "ONES\n"
-        result += indent + "| " + str(self.n) + "\n"
+        result += indent + "| " + str(self.dims) + "\n"
         return result
 
     @addToClass(AST.EyeMatrix)
     def printTree(self, indent):
         result = indent + "EYE\n"
-        result += indent + "| " + str(self.n) + "\n"
+        result += indent + "| " + str(self.dims) + "\n"
         return result
 
     @addToClass(AST.ZerosMatrix)
     def printTree(self, indent):
         result = indent + "ZEROS \n"
-        result += indent + "| " + str(self.n) + "\n"
+        result += indent + "| " + str(self.dims) + "\n"
         return result
