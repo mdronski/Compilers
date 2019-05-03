@@ -47,14 +47,14 @@ class Mparser:
 
         if len(p) == 2:
             p[0] = AST.Statements()
-            p[0].statements.append(p[1])
+            p[0].children.append(p[1])
         elif len(p) == 3:
-            p[1].statements.append(p[2])
+            p[1].children.append(p[2])
             p[0] = p[1]
         elif len(p) == 4:
             p[0] = p[2]
         elif len(p) == 5:
-            p[1].statements.extend(p[3].statements)
+            p[1].children.extend(p[3].children)
             p[0] = p[1]
 
     def p_statement(self, p):
@@ -65,7 +65,7 @@ class Mparser:
     def p_assignment(self, p):
         """assignment : variable assignment_op expression ';'"""
 
-        p[0] = AST.Assignment(p[1], p[2], p[3])
+        p[0] = AST.Assignment(p[1], p[2], p[3], p.lineno(1))
 
     def p_assignment_op(self, p):
         """assignment_op : '='
@@ -89,7 +89,7 @@ class Mparser:
         elif p[1] == '(':
             p[0] = p[2]
         elif isinstance(p[1], str):
-            p[0] = AST.Variable(p[1])
+            p[0] = AST.Variable(p[1], p.lineno(1))
         else:
             p[0] = p[1]
 
@@ -108,7 +108,7 @@ class Mparser:
     def p_variable(self, p):
         """variable : ID
                     | matrix_access"""
-        p[0] = AST.Variable(p[1])
+        p[0] = AST.Variable(p[1], p.lineno(1))
 
     def p_value(self, p):
         """value : variable
@@ -118,7 +118,7 @@ class Mparser:
 
     def p_matrix_access(self, p):
         """matrix_access : ID '[' INTNUM ',' INTNUM ']'"""
-        p[0] = AST.MatrixAccess(p[1], p[3], p[5])
+        p[0] = AST.MatrixAccess(p[1], p[3], p[5], p.lineno(1))
 
     def p_matrix(self, p):
         """matrix : EYE '(' INTNUM ')'
@@ -127,20 +127,30 @@ class Mparser:
                        | '[' matrix_row ']' """
 
         if p[1] == 'eye':
-            p[0] = AST.EyeMatrix(p[3])
+            p[0] = AST.EyeMatrix(p[3], p.lineno(1))
         elif p[1] == 'zeros':
-            p[0] = AST.ZerosMatrix(p[3])
+            p[0] = AST.ZerosMatrix(p[3], p.lineno(1))
         elif p[1] == 'ones':
-            p[0] = AST.OnesMatrix(p[3])
+            p[0] = AST.OnesMatrix(p[3], p.lineno(1))
         else:
             p[0] = AST.Matrix()
             p[0].rows = p[2]
+
+    def p_int_sequence(self, p):
+        """int_sequence : int_sequence ',' INTNUM
+                        | INTNUM"""
+        if len(p) == 2:
+            p[0] = []
+            p[0].append(p[1])
+        else:
+            p[1].append(p[3])
+            p[0] = p[1]
 
     def p_matrix_row(self, p):
         """matrix_row : matrix_row ',' value
                       | value"""
         if len(p) == 2:
-            p[0] = AST.MatrixRow()
+            p[0] = AST.MatrixRow(p.lineno(1))
             p[0].values.append(p[1])
         else:
             p[1].values.append(p[3])
@@ -156,7 +166,7 @@ class Mparser:
                   | expression DOTMUL expression
                   | expression DOTDIV expression"""
 
-        p[0] = AST.BinOp(p[1], p[2], p[3])
+        p[0] = AST.BinOp(p[1], p[2], p[3], p.lineno(1))
 
     def p_logic_op(self, p):
         """logic_op : expression EQ expression
@@ -166,15 +176,15 @@ class Mparser:
                   | expression LE expression
                   | expression GE expression"""
 
-        p[0] = AST.LogicOp(p[1], p[2], p[3])
+        p[0] = AST.LogicOp(p[1], p[2], p[3], p.lineno(1))
 
     def p_un_op(self, p):
         """un_op : expression "'"
                  | '-' expression %prec UMINUS"""
         if p[1] == '-':
-            p[0] = AST.UnaryOp(p[2], p[1])
+            p[0] = AST.UnaryOp(p[2], p[1], p.lineno(1))
         else:
-            p[0] = AST.UnaryOp(p[1], p[2])
+            p[0] = AST.UnaryOp(p[1], p[2], p.lineno(1))
 
     def p_flow_control(self, p):
         """flow_control : conditional_statement
@@ -212,15 +222,15 @@ class Mparser:
 
     def p_return_instr(self, p):
         """return_instr : RETURN expression ';' """
-        p[0] = AST.ReturnInstr(p[2])
+        p[0] = AST.ReturnInstr(p[2], p.lineno(1))
 
     def p_continue_instr(self, p):
         """continue_instr : CONTINUE ';' """
-        p[0] = AST.ContinueInstr()
+        p[0] = AST.ContinueInstr(p.lineno(1))
 
     def p_break_instr(self, p):
         """break_instr : BREAK ';' """
-        p[0] = AST.BreakInstr()
+        p[0] = AST.BreakInstr(p.lineno(1))
 
     def p_print_instr(self, p):
         """print_instr : PRINT instructions_to_print ';' """
@@ -231,7 +241,7 @@ class Mparser:
                                  | expression"""
         if len(p) == 2:
             p[0] = AST.PrintInstr()
-            p[0].instructions.append(p[1])
+            p[0].children.append(p[1])
         else:
-            p[1].instructions.append(p[3])
+            p[1].children.append(p[3])
             p[0] = p[1]

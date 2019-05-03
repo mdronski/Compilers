@@ -1,14 +1,17 @@
 class Node(object):
+    def __init__(self):
+        self.children = ()
+
     def __str__(self):
         return self.printTree("")
 
     def accept(self, visitor):
         return visitor.visit(self)
-    
+
 
 class Statements(Node):
     def __init__(self):
-        self.statements = []
+        self.children = []
 
 
 class Constant(Node):
@@ -29,8 +32,25 @@ class String(Constant):
 
 
 class Variable(Node):
-    def __init__(self, id):
+    def __init__(self, id, line):
         self.id = id
+        self.line = line
+
+
+class MatrixAccess(Node):
+    def __init__(self, id, row, column, line):
+        self.id = id
+        self.row = row
+        self.column = column
+        self.line = line
+
+
+class Matrix(Node):
+    def __init__(self):
+        self.rows = None # edited
+
+    def validate(self):
+        return self.rows.validate()
 
 
 class Value(Node):
@@ -38,37 +58,60 @@ class Value(Node):
         self.id = id
 
 
-class MatrixAccess(Node):
-    def __init__(self, id, row, column):
-        self.id = id
-        self.row = row
-        self.column = column
+class MatrixRow(Node):
+    def __init__(self, line):
+        self.values = []
+        self.line = line
 
+    def validate(self):
+        # chceck if the same type
+        t = type(self.values[0].id)
+        for x in self.values:
+            if type(x.id) != t:
+                return False
 
-class Matrix(Node):
-    def __init__(self):
-        self.rows = []
+        if isinstance(self.values[0].id, Matrix):
+            for val in self.values:
+                if isinstance(val.id, Matrix):
+                    if not val.id.validate():
+                        return False
+
+            l = len(self.values[0].id.rows.values)
+            for row in self.values:
+                if l != len(row.id.rows.values):
+                    return False
+        return True
+
+    def check_types(self):
+        t = type(self.values[0].id)
+        for n in self.values:
+            if type(n.id) != t:
+                print(type(n.id))
+                return False
+        return True
 
 
 class OnesMatrix(Matrix):
-    def __init__(self, n):
+    def __init__(self, n, line):
         super().__init__()
         self.n = n
+        self.line = line
         rows = []
         for i in range(n):
-            row = MatrixRow()
+            row = MatrixRow(line)
             row.values = [1 for x in range(n)]
             rows.append(row)
         self.rows = rows
 
 
 class EyeMatrix(Matrix):
-    def __init__(self, n):
+    def __init__(self, n, line):
         super().__init__()
         self.n = n
+        self.line = line
         rows = []
         for i in range(n):
-            row = MatrixRow()
+            row = MatrixRow(line)
             row.values = [1 for x in range(n)]
             row.values[i] = 1
             rows.append(row)
@@ -76,34 +119,34 @@ class EyeMatrix(Matrix):
 
 
 class ZerosMatrix(Matrix):
-    def __init__(self, n):
+    def __init__(self, n, line):
         super().__init__()
         self.n = n
+        self.line = line
         rows = []
         for i in range(n):
-            row = MatrixRow()
+            row = MatrixRow(line)
             row.values = [0 for x in range(n)]
             rows.append(row)
         self.rows = rows
 
 
-class MatrixRow(Node):
-    def __init__(self):
-        self.values = []
 
 
 class Assignment(Node):
-    def __init__(self, left, op, right):
+    def __init__(self, left, op, right, line):
         self.left = left
         self.op = op
         self.right = right
+        self.line = line
 
 
 class BinOp(Node):
-    def __init__(self, left, op, right):
+    def __init__(self, left, op, right, line):
         self.op = op
         self.left = left
         self.right = right
+        self.line = line
 
 
 class LogicOp(BinOp):
@@ -111,9 +154,10 @@ class LogicOp(BinOp):
 
 
 class UnaryOp(Node):
-    def __init__(self, expression, op):
+    def __init__(self, expression, op, line):
         self.op = op
         self.expression = expression
+        self.line = line
 
 
 class CondStatement(Node):
@@ -139,21 +183,24 @@ class ForLoop(Node):
 
 
 class ReturnInstr(Node):
-    def __init__(self, value):
+    def __init__(self, value, line):
         self.value = value
+        self.line = line
 
 
 class ContinueInstr(Node):
-    pass
+    def __init__(self, line):
+        self.line = line
 
 
 class BreakInstr(Node):
-    pass
+    def __init__(self, line):
+        self.line = line
 
 
 class PrintInstr(Node):
     def __init__(self):
-        self.instructions = []
+        self.children = []
 
 
 class Error(Node):
