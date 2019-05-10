@@ -16,10 +16,9 @@ if __name__ == '__main__':
     lexer = scanner.lexer
     lexer.input(text)
 
-    # Tokenize
     while True:
         tok = lexer.token()
         if not tok:
             break
-        column = Scanner.find_column(text, tok)
+        column = scanner.find_column(text, tok)
         print('{0:<9}: {1:<13}{2}'.format('(' + str(tok.lineno) + ', ' + str(column) + ')', str(tok.type), ' ( ' + str(tok.value) + ' )'))
