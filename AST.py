@@ -1,3 +1,6 @@
+import numpy as np
+
+
 class Node(object):
     def __init__(self):
         self.children = ()
@@ -54,6 +57,12 @@ class Matrix(Node):
     def shape(self):
         return self.rows.shape()
 
+    def numpy_array(self):
+        return np.asarray(self.to_list())
+
+    def to_list(self):
+        return self.rows.to_list()
+
 
 class Value(Node):
     def __init__(self, id):
@@ -97,22 +106,27 @@ class MatrixRow(Node):
             return [len(self.values)]
         return [len(self.values)] + self.values[0].id.shape()
 
+    def numpy_array(self):
+        pass
+
+    def to_list(self):
+        if isinstance(self.values[0].id, Matrix):
+            return [v.id.to_list() for v in self.values]
+        else:
+            return [v.id.value for v in self.values]
+
 
 class OnesMatrix(Matrix):
     def __init__(self, dims, line):
         super().__init__()
         self.dims = dims
         self.line = line
-        # self.n = n
-        # rows = []
-        # for i in range(n):
-        #     row = MatrixRow(line)
-        #     row.values = [1 for x in range(n)]
-        #     rows.append(row)
-        # self.rows = rows
 
     def shape(self):
         return self.dims
+
+    def numpy_array(self):
+        return np.ones(self.dims)
 
 
 class EyeMatrix(Matrix):
@@ -120,17 +134,12 @@ class EyeMatrix(Matrix):
         super().__init__()
         self.dims = dims
         self.line = line
-        # self.n = n
-        # rows = []
-        # for i in range(n):
-        #     row = MatrixRow(line)
-        #     row.values = [1 for x in range(n)]
-        #     row.values[i] = 1
-        #     rows.append(row)
-        # self.rows = rows
 
     def shape(self):
         return self.dims
+
+    def numpy_array(self):
+        return np.eye(self.dims)
 
 
 class ZerosMatrix(Matrix):
@@ -138,16 +147,12 @@ class ZerosMatrix(Matrix):
         super().__init__()
         self.dims = dims
         self.line = line
-        # self.n = n
-        # rows = []
-        # for i in range(n):
-        #     row = MatrixRow(line)
-        #     row.values = [0 for x in range(n)]
-        #     rows.append(row)
-        # self.rows = rows
 
     def shape(self):
         return self.dims
+
+    def numpy_array(self):
+        return np.zeros(self.dims)
 
 
 class Assignment(Node):

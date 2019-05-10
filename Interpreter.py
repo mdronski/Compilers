@@ -1,15 +1,18 @@
-
 import AST
 from Memory import *
 from Exceptions import *
 from visit import *
 import sys
 import operator
+import numpy as np
 
 ops = {"+": operator.add, "-": operator.sub, "*": operator.mul, "/": operator.truediv,
        "+=": operator.iadd, "-=": operator.isub, "*=": operator.imul, "/=": operator.itruediv,
+       ".+": np.add, ".-": np.subtract, ".*": np.multiply, "./": np.divide,
        "==": operator.eq, "!=": operator.ne, ">": operator.gt, "<": operator.lt,
        "<=": operator.le, ">=": operator.ge}
+
+un_ops = {"'": np.transpose, "-": np.negative}
 
 sys.setrecursionlimit(10000)
 
@@ -35,8 +38,21 @@ class Interpreter(object):
     def visit(self, node):
         return node.value
 
+    @when(AST.Matrix)
+    def visit(self, node):
+        return node.numpy_array()
+
+    @when(AST.MatrixAccess)
+    def visit(self, node):
+        matrix = self.variableStack.get(node.id)
+        # print(matrix)
+        return matrix[node.dims]
+
     @when(AST.Variable)
     def visit(self, node):
+        if isinstance(node.id, AST.MatrixAccess):
+            res = self.variableStack.get(node.id.id)
+            return res[tuple(node.id.dims)]
         return self.variableStack.get(node.id)
 
     @when(AST.Value)
@@ -79,7 +95,7 @@ class Interpreter(object):
             except BreakException:
                 break
             except ContinueException:
-                pass
+                continue
 
     @when(AST.ForLoop)
     def visit(self, node):
@@ -91,7 +107,7 @@ class Interpreter(object):
             except BreakException:
                 break
             except ContinueException:
-                pass
+                continue
 
     @when(AST.ReturnInstr)
     def visit(self, node):
@@ -106,12 +122,10 @@ class Interpreter(object):
     def visit(self, node):
         raise BreakException()
 
-    # @when(AST.ExpressionList)
-    # def visit(self, node):
-    #     expr_list = []
-    #     for child in node.children:
-    #         expr_list.append(child.accept(self))
-    #     return expr_list
+    @when(AST.UnaryOp)
+    def visit(self, node):
+        res = node.expression.accept(self)
+        return un_ops[node.op](res)
 
     @when(AST.BinOp)
     def visit(self, node):
