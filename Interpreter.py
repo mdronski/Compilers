@@ -42,6 +42,18 @@ class Interpreter(object):
     def visit(self, node):
         return node.numpy_array()
 
+    @when(AST.ZerosMatrix)
+    def visit(self, node):
+        return node.numpy_array()
+
+    @when(AST.EyeMatrix)
+    def visit(self, node):
+        return node.numpy_array()
+
+    @when(AST.OnesMatrix)
+    def visit(self, node):
+        return node.numpy_array()
+
     @when(AST.MatrixAccess)
     def visit(self, node):
         matrix = self.variableStack.get(node.id)
@@ -66,6 +78,7 @@ class Interpreter(object):
 
     @when(AST.Assignment)
     def visit(self, node):
+        print(type(node.right), type(node.left))
         expression = node.right.accept(self)
         if node.op == "=":
             self.variableStack.insert(node.left.id, expression)

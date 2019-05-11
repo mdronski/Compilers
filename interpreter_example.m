@@ -1,12 +1,18 @@
-A = [[1,2,3], [4,5,6]];
-B = [[1,2],[3, 4],[5,6]];
+x = eye(8);
+y = eye(8);
+z = x + y;
+print z;
+#
+x = [ 1,2,3,4,5 ];
+y = [ [1,2,3,4,5],
+      [1,2,3,4,5] ];
 
-D1 = A.+B' ; # add element-wise A with transpose of B
-D2 = A.-B' ; # substract element-wise A with transpose of B
-D2 *= A.*B ; # multiply element-wise A with transpose of B
-D2 /= A./B'; # divide element-wise A with transpose of B
-
-print D1;
-print D2;
-print D3;
-print D4;
+x = zeros(5);
+y = zeros(5,7);
+print x;
+print y;
+x = ones(3,5);
+z = x[1,1];
+print z;
+v = x[2,3];
+print v;

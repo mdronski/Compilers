@@ -126,7 +126,7 @@ class OnesMatrix(Matrix):
         return self.dims
 
     def numpy_array(self):
-        return np.ones(self.dims)
+        return np.ones(tuple(self.dims))
 
 
 class EyeMatrix(Matrix):
@@ -139,7 +139,7 @@ class EyeMatrix(Matrix):
         return self.dims
 
     def numpy_array(self):
-        return np.eye(self.dims)
+        return np.eye(self.dims[0])
 
 
 class ZerosMatrix(Matrix):
@@ -152,7 +152,7 @@ class ZerosMatrix(Matrix):
         return self.dims
 
     def numpy_array(self):
-        return np.zeros(self.dims)
+        return np.zeros(tuple(self.dims))
 
 
 class Assignment(Node):
