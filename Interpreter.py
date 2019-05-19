@@ -20,9 +20,8 @@ sys.setrecursionlimit(10000)
 class Interpreter(object):
     def __init__(self):
         self.variableStack = MemoryStack()
-        self.functionStack = MemoryStack()
 
-    @on('node')  #
+    @on('node')
     def visit(self, node):
         pass
 
@@ -57,7 +56,6 @@ class Interpreter(object):
     @when(AST.MatrixAccess)
     def visit(self, node):
         matrix = self.variableStack.get(node.id)
-        # print(matrix)
         return matrix[node.dims]
 
     @when(AST.Variable)
@@ -78,12 +76,11 @@ class Interpreter(object):
 
     @when(AST.Assignment)
     def visit(self, node):
-        print(type(node.right), type(node.left))
         expression = node.right.accept(self)
         if node.op == "=":
-            self.variableStack.insert(node.left.id, expression)
+            self.variableStack.set(node.left.id, expression)
         else:
-            self.variableStack.insert(node.left.id, ops[node.op](self.variableStack.get(node.left.id), expression))
+            self.variableStack.set(node.left.id, ops[node.op](self.variableStack.get(node.left.id), expression))
         return expression
 
     @when(AST.PrintInstr)
@@ -95,10 +92,12 @@ class Interpreter(object):
 
     @when(AST.CondStatement)
     def visit(self, node):
+        self.variableStack.push(Memory(node.condition))
         if node.condition.accept(self):
             node.statements.accept(self)
         elif node.has_else:
             node.else_statements.accept(self)
+        self.variableStack.pop()
 
     @when(AST.WhileLoop)
     def visit(self, node):

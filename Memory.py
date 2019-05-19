@@ -36,7 +36,8 @@ class MemoryStack:
         self.mem_stack[-1].put(name, value)
 
     def set(self, name, value):  # sets variable <name> to value <value>
-        for mem in reversed(self.mem_stack):
+        self.insert(name, value)
+        for mem in self.mem_stack:
             if mem.has_key(name):
                 mem.put(name, value)
                 break
